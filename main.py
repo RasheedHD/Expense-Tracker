@@ -27,8 +27,10 @@ def addExpense(description, amount, category):
     exportExpenses()
 
 
-def deleteExpense(selectedExpense):
+def deleteExpense(id):
+    selectedExpense = findExpense(id)
     expenses.remove(selectedExpense)
+    exportExpenses()
 
 
 def updateExpense(selectedExpense, updatedField, updatedValue):
@@ -57,7 +59,7 @@ def viewExpenses():
         )
 
 
-def getSummary(month=0):
+def getSummary(month):
     sum = 0
     if not month:
         sum = getTotalExpenses()
@@ -154,15 +156,20 @@ list_parser = subparsers.add_parser("list", help="Lists all expenses.")
 list_parser.add_argument("--category")
 
 summary_parser = subparsers.add_parser("summary", help="Displays expenses summary.")
-summary_parser.add_argument("--month")
+summary_parser.add_argument("--month", type=int)
 
 delete_parser = subparsers.add_parser("delete", help="Delete an expense.")
-delete_parser.add_argument("--id")
+delete_parser.add_argument("--id", type=int)
 
 args = parser.parse_args()
 
 if args.command == "add":
     addExpense(args.description, args.amount, args.category)
     print(f"Expense added successfully (ID: {currID})")
-
-print()
+elif args.command == "list":
+    viewExpenses()
+elif args.command == "summary":
+    getSummary(args.month)
+elif args.command == "delete":
+    deleteExpense(args.id)
+    print("Expense deleted successfully")
