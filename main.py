@@ -18,11 +18,14 @@ def load():
 
 
 def addExpense(description, amount, category):
+    expense = Expense(currID, description, amount, category)
+    budgetMonth = expense.date.month
+    budget = budgets[budgetMonth]
     if budget == -1:
-        expenses.append(Expense(currID, description, amount, category))
+        expenses.append(expense)
     else:
         expenses.append(Expense(currID, description, amount, category))
-        if budget <= getTotalExpenses():
+        if budget < getSummary(budgetMonth, False):
             print("Warning: Budget Exceeded.")
     exportExpenses()
 
@@ -59,7 +62,7 @@ def viewExpenses():
         )
 
 
-def getSummary(month):
+def getSummary(month, displayPrintMessage=True):
     sum = 0
     if not month:
         sum = getTotalExpenses()
@@ -74,8 +77,9 @@ def getSummary(month):
             if expense.date.month == month and expense.date.year == currYear
             else 0
         )
-
-    print(f"Total expenses for {summaryMonth} {currYear}: {sum}")
+    if displayPrintMessage:
+        print(f"Total expenses for {summaryMonth} {currYear}: {sum}")
+    return sum
 
 
 def getTotalExpenses():
@@ -121,8 +125,30 @@ def loadExpenses():
             )
 
 
-expenses = []
-currID = getNextID()
+def setBudgets(month, budget):
+    rows = []
+    with open("budget.csv", "r") as f:
+        budgetReader = csv.reader(f)
+        for row in budgetReader:
+            if row[0] == month:
+                row[1] = budget
+            rows.append(row)
+
+    with open("budget.csv", "w", newline="") as f:
+        budgetWriter = csv.writer(f)
+        budgetWriter.writerows(rows)
+
+
+def loadBudgets():
+    with open("budget.csv", "r") as f:
+        budgetReader = csv.reader(f)
+        for row in budgetReader:
+            budgets[int(row[0])] = int(row[1])
+
+
+def loadInfo():
+    pass
+
 
 monthsDict = {
     1: "January",
@@ -139,10 +165,13 @@ monthsDict = {
     12: "December",
 }
 
-budget = 40
+budgets = {}
+expenses = []
 
-# budget = someNum
 loadExpenses()
+loadBudgets()
+currID = getNextID()
+
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest="command", required=True)
@@ -152,14 +181,18 @@ add_parser.add_argument("--description")
 add_parser.add_argument("--amount", type=int)
 add_parser.add_argument("--category")
 
-list_parser = subparsers.add_parser("list", help="Lists all expenses.")
+list_parser = subparsers.add_parser("list", help="List all expenses.")
 list_parser.add_argument("--category")
 
-summary_parser = subparsers.add_parser("summary", help="Displays expenses summary.")
+summary_parser = subparsers.add_parser("summary", help="Display expenses summary.")
 summary_parser.add_argument("--month", type=int)
 
 delete_parser = subparsers.add_parser("delete", help="Delete an expense.")
 delete_parser.add_argument("--id", type=int)
+
+budget_parser = subparsers.add_parser("budget", help="Set a budget")
+budget_parser.add_argument("--limit")
+budget_parser.add_argument("--month")
 
 args = parser.parse_args()
 
@@ -173,3 +206,6 @@ elif args.command == "summary":
 elif args.command == "delete":
     deleteExpense(args.id)
     print("Expense deleted successfully")
+elif args.command == "budget":
+    setBudgets(args.month, args.limit)
+    print("Budgets set successfully")
