@@ -3,12 +3,12 @@ import csv
 
 
 class Expense:
-    def __init__(self, id, description, amount, category):
+    def __init__(self, id, description, amount, category, date=datetime.now()):
         self.id = id
         self.description = description
         self.amount = amount
         self.category = category
-        self.date = datetime.now()
+        self.date = date
         self.dateString = self.date.strftime("%d/%m/%Y")
 
 
@@ -96,11 +96,14 @@ def exportExpenses():
             eDateString = expense.dateString
             expenseWriter.writerow([eID, eDescription, eAmount, eCategory, eDateString])
 
-
+def loadExpenses():
+    with open("expenses.csv") as f:
+        expenseReader = csv.reader(f)
+        for row in expenseReader:
+            expenses.append(Expense(int(row[0]), row[1], int(row[2]), row[3], datetime.strptime(row[4], "%d/%m/%Y")))
 
 expenses = [
-    Expense(1, "10 Piece Chicken Fillet", 17, "Food"),
-    Expense(2, "Double Cheeseburger", 15, "Food"),
+    
 ]
 currID = getNextID()
 
@@ -125,4 +128,5 @@ budget = 40
 addExpense("AI Course", 10, "Schooling")
 viewExpenses()
 getSummary()
-exportExpenses()
+#exportExpenses()
+loadExpenses()
