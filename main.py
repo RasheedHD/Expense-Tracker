@@ -1,4 +1,5 @@
 from datetime import datetime
+import csv
 
 
 class Expense:
@@ -76,9 +77,24 @@ def getTotalExpenses():
 
     return sum
 
-def getMaxID():
-    return 0
+def getNextID():
+    maxID = 1
+    for expense in expenses:
+        if expense.id > maxID:
+            maxID = expense.id
+    return maxID + 1
 
+
+def exportExpenses():
+    with open("expenses.csv", "w", newline="") as f:
+        expenseWriter = csv.writer(f)
+        for expense in expenses:
+            eID = expense.id
+            eDescription = expense.description
+            eAmount = expense.amount
+            eCategory = expense.category
+            eDateString = expense.dateString
+            expenseWriter.writerow([eID, eDescription, eAmount, eCategory, eDateString])
 
 
 
@@ -86,7 +102,7 @@ expenses = [
     Expense(1, "10 Piece Chicken Fillet", 17, "Food"),
     Expense(2, "Double Cheeseburger", 15, "Food"),
 ]
-currID = getMaxID()
+currID = getNextID()
 
 monthsDict = {
     1: "January",
@@ -106,6 +122,7 @@ monthsDict = {
 budget = 40
 
 #budget = someNum
+addExpense("AI Course", 10, "Schooling")
 viewExpenses()
 getSummary()
-addExpense("AI Course", 10, "Schooling")
+exportExpenses()
