@@ -224,3 +224,6 @@ elif args.command == "budget":
 elif args.command == "update":
     updateExpense(findExpense(args.id), args.description, args.amount, args.category)
     print(f"Expense updated successfully (ID: {args.id})")
+
+
+# TODO: Add Error Handling
