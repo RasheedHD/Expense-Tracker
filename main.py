@@ -24,6 +24,7 @@ def addExpense(description, amount, category):
         expenses.append(Expense(currID, description, amount, category))
         if budget <= getTotalExpenses():
             print("Warning: Budget Exceeded.")
+    exportExpenses()
 
 
 def deleteExpense(selectedExpense):
@@ -84,7 +85,7 @@ def getTotalExpenses():
 
 
 def getNextID():
-    maxID = 1
+    maxID = 0
     for expense in expenses:
         if expense.id > maxID:
             maxID = expense.id
@@ -139,7 +140,29 @@ monthsDict = {
 budget = 40
 
 # budget = someNum
-# exportExpenses()
 loadExpenses()
-viewExpenses()
-getSummary(4)
+
+parser = argparse.ArgumentParser()
+subparsers = parser.add_subparsers(dest="command", required=True)
+
+add_parser = subparsers.add_parser("add", help="Add an expense.")
+add_parser.add_argument("--description")
+add_parser.add_argument("--amount", type=int)
+add_parser.add_argument("--category")
+
+list_parser = subparsers.add_parser("list", help="Lists all expenses.")
+list_parser.add_argument("--category")
+
+summary_parser = subparsers.add_parser("summary", help="Displays expenses summary.")
+summary_parser.add_argument("--month")
+
+delete_parser = subparsers.add_parser("delete", help="Delete an expense.")
+delete_parser.add_argument("--id")
+
+args = parser.parse_args()
+
+if args.command == "add":
+    addExpense(args.description, args.amount, args.category)
+    print(f"Expense added successfully (ID: {currID})")
+
+print()
