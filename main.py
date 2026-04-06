@@ -13,10 +13,6 @@ class Expense:
         self.dateString = self.date.strftime("%d/%m/%Y")
 
 
-def load():
-    pass
-
-
 def addExpense(description, amount, category):
     expense = Expense(currID, description, amount, category)
     budgetMonth = expense.date.month
@@ -57,12 +53,19 @@ def findExpense(id):
     raise LookupError("Error: Expense could not be found.")
 
 
-def viewExpenses():
+def viewExpenses(category):
     print(f"{"ID":<6}{"Description":<40}{"Category":<16}{"Amount":<14}{"Date":<10}")
-    for expense in expenses:
-        print(
-            f"{expense.id:<6}{expense.description:<40}{expense.category:<16}${expense.amount:<13}{expense.dateString:<10}"
-        )
+    if not category:
+        for expense in expenses:
+            print(
+                f"{expense.id:<6}{expense.description:<40}{expense.category:<16}${expense.amount:<13}{expense.dateString:<10}"
+            )
+    else:
+        for expense in expenses:
+            if expense.category == category:
+                print(
+                    f"{expense.id:<6}{expense.description:<40}{expense.category:<16}${expense.amount:<13}{expense.dateString:<10}"
+                )
 
 
 def getSummary(month, displayPrintMessage=True):
@@ -209,7 +212,7 @@ if args.command == "add":
     addExpense(args.description, args.amount, args.category)
     print(f"Expense added successfully (ID: {currID})")
 elif args.command == "list":
-    viewExpenses()
+    viewExpenses(args.category)
 elif args.command == "summary":
     getSummary(args.month)
 elif args.command == "delete":
