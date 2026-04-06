@@ -1,5 +1,6 @@
 from datetime import datetime
 import csv
+import argparse
 
 
 class Expense:
@@ -23,7 +24,6 @@ def addExpense(description, amount, category):
         expenses.append(Expense(currID, description, amount, category))
         if budget <= getTotalExpenses():
             print("Warning: Budget Exceeded.")
-
 
 
 def deleteExpense(selectedExpense):
@@ -64,10 +64,15 @@ def getSummary(month=0):
         return
 
     summaryMonth = monthsDict[month]
+    currYear = datetime.now().year
     for expense in expenses:
-        sum += expense.amount if expense.date.month == month else 0
+        sum += (
+            expense.amount
+            if expense.date.month == month and expense.date.year == currYear
+            else 0
+        )
 
-    print(f"Total expenses for {summaryMonth}: {sum}")
+    print(f"Total expenses for {summaryMonth} {currYear}: {sum}")
 
 
 def getTotalExpenses():
@@ -76,6 +81,7 @@ def getTotalExpenses():
         sum += expense.amount
 
     return sum
+
 
 def getNextID():
     maxID = 1
@@ -96,15 +102,23 @@ def exportExpenses():
             eDateString = expense.dateString
             expenseWriter.writerow([eID, eDescription, eAmount, eCategory, eDateString])
 
+
 def loadExpenses():
     with open("expenses.csv") as f:
         expenseReader = csv.reader(f)
         for row in expenseReader:
-            expenses.append(Expense(int(row[0]), row[1], int(row[2]), row[3], datetime.strptime(row[4], "%d/%m/%Y")))
+            expenses.append(
+                Expense(
+                    int(row[0]),
+                    row[1],
+                    int(row[2]),
+                    row[3],
+                    datetime.strptime(row[4], "%d/%m/%Y"),
+                )
+            )
 
-expenses = [
-    
-]
+
+expenses = []
 currID = getNextID()
 
 monthsDict = {
@@ -124,9 +138,8 @@ monthsDict = {
 
 budget = 40
 
-#budget = someNum
-addExpense("AI Course", 10, "Schooling")
-viewExpenses()
-getSummary()
-#exportExpenses()
+# budget = someNum
+# exportExpenses()
 loadExpenses()
+viewExpenses()
+getSummary(4)
