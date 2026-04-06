@@ -16,7 +16,13 @@ def load():
 
 
 def addExpense(description, amount, category):
-    expenses.append(Expense(currID, description, amount, category))
+    if budget == -1:
+        expenses.append(Expense(currID, description, amount, category))
+    else:
+        expenses.append(Expense(currID, description, amount, category))
+        if budget <= getTotalExpenses():
+            print("Warning: Budget Exceeded.")
+
 
 
 def deleteExpense(selectedExpense):
@@ -52,8 +58,7 @@ def viewExpenses():
 def getSummary(month=0):
     sum = 0
     if not month:
-        for expense in expenses:
-            sum += expense.amount
+        sum = getTotalExpenses()
         print(f"Total expenses: {sum}")
         return
 
@@ -64,8 +69,17 @@ def getSummary(month=0):
     print(f"Total expenses for {summaryMonth}: {sum}")
 
 
+def getTotalExpenses():
+    sum = 0
+    for expense in expenses:
+        sum += expense.amount
+
+    return sum
+
 def getMaxID():
     return 0
+
+
 
 
 expenses = [
@@ -88,5 +102,10 @@ monthsDict = {
     11: "November",
     12: "December",
 }
+
+budget = 40
+
+#budget = someNum
 viewExpenses()
 getSummary()
+addExpense("AI Course", 10, "Schooling")
