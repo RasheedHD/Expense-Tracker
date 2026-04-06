@@ -36,18 +36,21 @@ def deleteExpense(id):
     exportExpenses()
 
 
-def updateExpense(selectedExpense, updatedField, updatedValue):
-    if updatedField == "description":
-        selectedExpense.description = updatedValue
-    elif updatedField == "amount":
-        selectedExpense.amount = updatedValue
-    elif updatedField == "category":
-        selectedExpense.amount = updatedValue
-    else:
-        raise Exception("Error: Only description or amount can be updated")
+def updateExpense(selectedExpense, newDescription, newAmount, newCategory):
+    if not newDescription:
+        newDescription = selectedExpense.description
+    if not newAmount:
+        newAmount = selectedExpense.amount
+    if not newCategory:
+        newCategory = selectedExpense.category
+    selectedExpense.description = newDescription
+    selectedExpense.amount = newAmount
+    selectedExpense.category = newCategory
+    exportExpenses()
 
 
 def findExpense(id):
+    id = int(id)
     for expense in expenses:
         if expense.id == id:
             return expense
@@ -181,6 +184,12 @@ add_parser.add_argument("--description")
 add_parser.add_argument("--amount", type=int)
 add_parser.add_argument("--category")
 
+update_parser = subparsers.add_parser("update", help="Update an expense.")
+update_parser.add_argument("--id")
+update_parser.add_argument("--description")
+update_parser.add_argument("--amount", type=int)
+update_parser.add_argument("--category")
+
 list_parser = subparsers.add_parser("list", help="List all expenses.")
 list_parser.add_argument("--category")
 
@@ -209,3 +218,6 @@ elif args.command == "delete":
 elif args.command == "budget":
     setBudgets(args.month, args.limit)
     print("Budgets set successfully")
+elif args.command == "update":
+    updateExpense(findExpense(args.id), args.description, args.amount, args.category)
+    print(f"Expense updated successfully (ID: {args.id})")
