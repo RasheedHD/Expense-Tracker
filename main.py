@@ -3,6 +3,26 @@ import csv
 import argparse
 
 
+class budgetException(Exception):
+    pass
+
+
+class summaryException(Exception):
+    pass
+
+
+class negativeAmountException(Exception):
+    pass
+
+
+class addException(Exception):
+    pass
+
+
+class updateException(Exception):
+    pass
+
+
 class Expense:
     def __init__(self, id, description, amount, category, date=datetime.now()):
         self.id = id
@@ -14,6 +34,12 @@ class Expense:
 
 
 def addExpense(description, amount, category):
+    if not (description and amount and category):
+        raise addException(
+            "Error: Missing one of three arguments (Description/Amount/Category)."
+        )
+    if amount < 0:
+        raise negativeAmountException("Error: Amount cannot be negative.")
     expense = Expense(currID, description, amount, category)
     budgetMonth = expense.date.month
     budget = budgets[budgetMonth]
@@ -33,6 +59,10 @@ def deleteExpense(id):
 
 
 def updateExpense(selectedExpense, newDescription, newAmount, newCategory):
+    if not (newDescription or newAmount or newCategory):
+        raise updateException(
+            "Error: At least one argument should be provided (Description/Amount/Category)."
+        )
     if not newDescription:
         newDescription = selectedExpense.description
     if not newAmount:
@@ -69,6 +99,9 @@ def viewExpenses(category):
 
 
 def getSummary(month, displayPrintMessage=True):
+    month = int(month)
+    if month not in monthsDict:
+        raise summaryException("Error: Invalid month.")
     sum = 0
     if not month:
         sum = getTotalExpenses()
@@ -132,6 +165,8 @@ def loadExpenses():
 
 
 def setBudgets(month, budget):
+    if not (month and budget) or (month not in monthsDict):
+        raise budgetException("Error: Month and/or limit not specified well.")
     rows = []
     with open("budget.csv", "r") as f:
         budgetReader = csv.reader(f)
@@ -150,10 +185,6 @@ def loadBudgets():
         budgetReader = csv.reader(f)
         for row in budgetReader:
             budgets[int(row[0])] = int(row[1])
-
-
-def loadInfo():
-    pass
 
 
 monthsDict = {
@@ -207,23 +238,25 @@ budget_parser.add_argument("--limit")
 budget_parser.add_argument("--month")
 
 args = parser.parse_args()
-
-if args.command == "add":
-    addExpense(args.description, args.amount, args.category)
-    print(f"Expense added successfully (ID: {currID})")
-elif args.command == "list":
-    viewExpenses(args.category)
-elif args.command == "summary":
-    getSummary(args.month)
-elif args.command == "delete":
-    deleteExpense(args.id)
-    print("Expense deleted successfully")
-elif args.command == "budget":
-    setBudgets(args.month, args.limit)
-    print("Budgets set successfully")
-elif args.command == "update":
-    updateExpense(findExpense(args.id), args.description, args.amount, args.category)
-    print(f"Expense updated successfully (ID: {args.id})")
-
-
+try:
+    if args.command == "add":
+        addExpense(args.description, args.amount, args.category)
+        print(f"Expense added successfully (ID: {currID})")
+    elif args.command == "list":
+        viewExpenses(args.category)
+    elif args.command == "summary":
+        getSummary(args.month)
+    elif args.command == "delete":
+        deleteExpense(args.id)
+        print("Expense deleted successfully")
+    elif args.command == "budget":
+        setBudgets(args.month, args.limit)
+        print("Budgets set successfully")
+    elif args.command == "update":
+        updateExpense(
+            findExpense(args.id), args.description, args.amount, args.category
+        )
+        print(f"Expense updated successfully (ID: {args.id})")
+except Exception as m:
+    print(m)
 # TODO: Add Error Handling
