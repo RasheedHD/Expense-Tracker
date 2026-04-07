@@ -151,3 +151,4 @@ python main.py budget --month 8 --limit 500
 ## 📄 License
 
 This project is for educational purposes.
+Project taken from roadmap.sh at https://roadmap.sh/projects/expense-tracker
