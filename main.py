@@ -71,6 +71,10 @@ def updateExpense(selectedExpense, newDescription, newAmount, newCategory):
         newCategory = selectedExpense.category
     selectedExpense.description = newDescription
     selectedExpense.amount = newAmount
+    budgetMonth = selectedExpense.date.month
+    budget = budgets[budgetMonth]
+    if budget < getSummary(budgetMonth, False):
+        print("Warning: Budget Exceeded.")
     selectedExpense.category = newCategory
     exportExpenses()
 
@@ -99,14 +103,15 @@ def viewExpenses(category):
 
 
 def getSummary(month, displayPrintMessage=True):
-    month = int(month)
-    if month not in monthsDict:
-        raise summaryException("Error: Invalid month.")
+    month = int(month) if month != None else None
     sum = 0
     if not month:
         sum = getTotalExpenses()
-        print(f"Total expenses: {sum}")
+        print(f"Total expenses: ${sum}")
         return
+
+    if month not in monthsDict:
+        raise summaryException("Error: Invalid month.")
 
     summaryMonth = monthsDict[month]
     currYear = datetime.now().year
@@ -117,7 +122,7 @@ def getSummary(month, displayPrintMessage=True):
             else 0
         )
     if displayPrintMessage:
-        print(f"Total expenses for {summaryMonth} {currYear}: {sum}")
+        print(f"Total expenses for {summaryMonth} {currYear}: ${sum}")
     return sum
 
 
@@ -171,7 +176,7 @@ def setBudgets(month, budget):
     with open("budget.csv", "r") as f:
         budgetReader = csv.reader(f)
         for row in budgetReader:
-            if row[0] == month:
+            if int(row[0]) == month:
                 row[1] = budget
             rows.append(row)
 
@@ -234,8 +239,8 @@ delete_parser = subparsers.add_parser("delete", help="Delete an expense.")
 delete_parser.add_argument("--id", type=int)
 
 budget_parser = subparsers.add_parser("budget", help="Set a budget")
-budget_parser.add_argument("--limit")
-budget_parser.add_argument("--month")
+budget_parser.add_argument("--limit", type=int)
+budget_parser.add_argument("--month", type=int)
 
 args = parser.parse_args()
 try:
